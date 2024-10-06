@@ -1,0 +1,11 @@
+.error {
+    width: 400px;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: 0.04em;
+    color: #1310bd;
+    margin: 0 auto;
+    margin-top: 20px;
+}
