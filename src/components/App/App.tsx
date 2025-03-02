@@ -12,13 +12,13 @@ import css from './App.module.css';
 export default function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [articles, setArticles] = useState<Image[]>([]);
+  const [articles, setArticles] = useState<Image[]>([]); 
   const [topic, setTopic] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null); 
   const [isSearchAttempted, setIsSearchAttempted] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true); // Додаємо стан
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
   const handleSearch = (newTopic: string) => {
     if (newTopic.trim() === '') {
@@ -29,15 +29,15 @@ export default function App() {
     setTopic(newTopic);
     setPage(1);
     setArticles([]);
-    setHasMore(true); // Скидаємо hasMore при новому пошуку
     setIsSearchAttempted(true);
+    setHasMore(true);
   };
 
   const handleLoadMore = () => {
     setPage((prevPage) => prevPage + 1);
   };
 
-  const openModal = (image: Image) => {
+  const openModal = (image: Image) => { 
     setSelectedImage(image);
     setModalIsOpen(true);
   };
@@ -56,11 +56,20 @@ export default function App() {
         setError(false);
         const fetchedArticles = await fetchArticles(topic, page);
 
+        if (fetchedArticles.length === 0) {
+          setHasMore(false); 
+          return;
+        }
+
         setArticles((prevState) => [...prevState, ...fetchedArticles]);
-        setHasMore(fetchedArticles.length > 0); // Якщо масив пустий, то кнопка зникне
-      } catch (err) {
+      } catch (error) {
         setError(true);
-        toast.error(`Failed to fetch articles: ${err.message}`);
+
+        if (error instanceof Error) {
+          toast.error(`Failed to fetch articles: ${error.message}`);
+        } else {
+          toast.error('An unknown error occurred.');
+        }
       } finally {
         setLoading(false);
       }
@@ -68,6 +77,7 @@ export default function App() {
 
     getArticles();
   }, [page, topic, isSearchAttempted]);
+
 
   return (
     <div className={css.container}>
@@ -78,12 +88,16 @@ export default function App() {
       {articles.length > 0 && (
         <>
           <ImageGallery items={articles} onImageClick={openModal} />
-          {!loading && !error && hasMore && ( // Додаємо перевірку hasMore
-            <LoadMoreBtn onClick={handleLoadMore} disabled={loading} />
-          )}
+          {!loading && !error && hasMore && (
+            <LoadMoreBtn onClick={handleLoadMore} disabled={loading} />)}
         </>
       )}
       <ImageModal isOpen={modalIsOpen} onClose={closeModal} image={selectedImage} />
     </div>
   );
 }
+
+
+
+
+
