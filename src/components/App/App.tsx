@@ -12,12 +12,13 @@ import css from './App.module.css';
 export default function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [articles, setArticles] = useState<Image[]>([]); 
+  const [articles, setArticles] = useState<Image[]>([]);
   const [topic, setTopic] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-  const [selectedImage, setSelectedImage] = useState<Image | null>(null); 
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [isSearchAttempted, setIsSearchAttempted] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true); // Додаємо стан
 
   const handleSearch = (newTopic: string) => {
     if (newTopic.trim() === '') {
@@ -28,6 +29,7 @@ export default function App() {
     setTopic(newTopic);
     setPage(1);
     setArticles([]);
+    setHasMore(true); // Скидаємо hasMore при новому пошуку
     setIsSearchAttempted(true);
   };
 
@@ -35,7 +37,7 @@ export default function App() {
     setPage((prevPage) => prevPage + 1);
   };
 
-  const openModal = (image: Image) => { 
+  const openModal = (image: Image) => {
     setSelectedImage(image);
     setModalIsOpen(true);
   };
@@ -53,10 +55,12 @@ export default function App() {
         setLoading(true);
         setError(false);
         const fetchedArticles = await fetchArticles(topic, page);
+
         setArticles((prevState) => [...prevState, ...fetchedArticles]);
-      } catch {
+        setHasMore(fetchedArticles.length > 0); // Якщо масив пустий, то кнопка зникне
+      } catch (err) {
         setError(true);
-        toast.error('Failed to fetch articles: ${err.message}`');
+        toast.error(`Failed to fetch articles: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -74,15 +78,12 @@ export default function App() {
       {articles.length > 0 && (
         <>
           <ImageGallery items={articles} onImageClick={openModal} />
-          {!loading && !error && (<LoadMoreBtn onClick={handleLoadMore} disabled={loading} />)}
+          {!loading && !error && hasMore && ( // Додаємо перевірку hasMore
+            <LoadMoreBtn onClick={handleLoadMore} disabled={loading} />
+          )}
         </>
       )}
       <ImageModal isOpen={modalIsOpen} onClose={closeModal} image={selectedImage} />
     </div>
   );
 }
-
-
-
-
-
